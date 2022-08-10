@@ -1,0 +1,14 @@
+http:
+  routers:
+    traefik_dashboard:
+      rule: Host(`traefik.ohmy.host`)
+      service: api@internal
+      middlewares: ['auth']
+      tls:
+        certResolver: le
+
+  middlewares:
+    auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$3b2lagu7$5vOo.zbAOeMVdgPQyCDB.1"

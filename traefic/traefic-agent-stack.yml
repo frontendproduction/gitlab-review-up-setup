@@ -2,24 +2,20 @@ version: "3.3"
 services:
   traefik:
     image: traefik
-    command: --api=true \
-      --api.dashboard=true \
-      --api.insecure=true \
-      --docker \
-      --docker.swarmmode \
-      --docker.domain=traefik \
-      --docker.watch \
-      --logLevel=DEBUG
     networks:
       - traefik-net
     ports:
       - "80:80"
-      - "8080:8080"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.yaml:/etc/traefik/traefik.yaml
+      - ./routes.yaml:/etc/traefik/routes.yaml
+      - ./acme.json:/etc/traefik/acme.json
     deploy:
       placement:
         constraints: [node.role==manager]
 
 networks:
   traefik-net:
+    external: true
