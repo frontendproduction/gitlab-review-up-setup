@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/usr/bin/env sh
 
 # Install ACL and set allow "gitlab-runner" user (which typical id is 999, and he exsits only inside jobs and thre is
 # no such user in the system) to user docker.sock

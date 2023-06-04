@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env sh
 docker run -d \
     --name gitlab-runner \
     --restart always \

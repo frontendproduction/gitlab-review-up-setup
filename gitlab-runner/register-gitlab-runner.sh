@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env sh
 export GITLAB_URL=https://git.izex.org/
 export GITLAB_TOKEN=5Nz-y8eVHUkvyT6KrkYU
 
