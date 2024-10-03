@@ -1,7 +1,7 @@
 http:
   routers:
     traefik_dashboard:
-      rule: Host(`traefik.ohmy.host`)
+      rule: Host(`traefik.wefp.ru`)
       service: api@internal
       middlewares: ['auth']
       tls:
