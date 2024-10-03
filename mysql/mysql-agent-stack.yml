@@ -12,3 +12,14 @@ services:
       - '--collation-server=utf8mb4_unicode_ci'
     environment:
       MYSQL_ROOT_PASSWORD: awrfpiouhafdsoihgrp0ihgearoihagreihoagfoihasdlkjn
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - mysql-net
+
+networks:
+  mysql-net:
+    external: true
+
+volumes:
+  mysql-data:
