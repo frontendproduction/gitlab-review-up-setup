@@ -1,0 +1,75 @@
+---
+- name: Create letsencrypt directory
+  file:
+    path: /opt/traefik/letsencrypt
+    state: directory
+    mode: 0755
+  become: yes
+
+- name: Create acme.json with secure permissions
+  file:
+    path: /opt/traefik/letsencrypt/acme.json
+    state: touch
+    mode: 0600
+  become: yes
+
+- name: Create basic authentication credentials
+  ansible.builtin.command: htpasswd -nbB "{{ traefik_auth_user }}" "{{ traefik_auth_password }}"
+  register: traefik_auth
+  no_log: true
+  changed_when: false
+
+- name: Start Traefik container
+  community.docker.docker_container:
+    name: traefik
+    image: traefik:v2.6
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "{{ traefik_network }}"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/opt/traefik/letsencrypt:/letsencrypt"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.traefik-dashboard.rule: "Host(`traefik.wefp.ru`)"
+      traefik.http.routers.traefik-dashboard.service: "api@internal"
+      traefik.http.routers.traefik-dashboard.entrypoints: "websecure"
+      traefik.http.routers.traefik-dashboard.tls.certresolver: "le"
+
+      # Authentication
+      traefik.http.routers.traefik-dashboard.middlewares: "traefik-dashboard-auth,secure-headers"
+      traefik.http.middlewares.traefik-dashboard-auth.basicauth.users: "{{ traefik_auth.stdout | trim }}"
+
+      # Security headers
+      traefik.http.middlewares.secure-headers.headers.stsincludesubdomains: "true"
+      traefik.http.middlewares.secure-headers.headers.stspreload: "true"
+      traefik.http.middlewares.secure-headers.headers.contenttypenosniff: "true"
+      traefik.http.middlewares.secure-headers.headers.browserxssfilter: "true"
+      traefik.http.middlewares.secure-headers.headers.sslredirect: "true"
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network={{ traefik_network }}"
+
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+
+      # Let's Encrypt configuration
+      - "--certificatesresolvers.le.acme.email={{ traefik_acme_email }}"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+
+      # Dashboard configuration
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+
+      # Logging
+      - "--log.level=INFO"
+      - "--accesslog=true"

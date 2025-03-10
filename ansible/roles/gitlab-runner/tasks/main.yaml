@@ -1,0 +1,24 @@
+---
+- name: Register GitLab Runner
+  community.docker.docker_container:
+    name: gitlab-runner
+    image: gitlab/gitlab-runner:alpine
+    state: started
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/srv/gitlab-runner/config:/etc/gitlab-runner"
+    command:
+      - "register"
+      - "--non-interactive"
+      - "--executor"
+      - "docker"
+      - "--docker-image"
+      - "alpine:latest"
+      - "--url"
+      - "https://gitlab.com/"
+      - "--registration-token"
+      - "{{ gitlab_token }}"
+      - "--description"
+      - "yc-docker-runner"
+    environment:
+      CI_SERVER_URL: "https://gitlab.com/"

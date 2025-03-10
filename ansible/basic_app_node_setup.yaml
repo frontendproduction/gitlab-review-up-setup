@@ -1,0 +1,35 @@
+---
+- name: Setup apps vm
+  hosts: apps_vm
+  tasks:
+    - name: Ensure Docker network exists
+      community.docker.docker_network:
+        name: "{{ traefik_network }}"
+        state: present
+
+    - name: Install apache2-utils
+      apt:
+        name: apache2-utils
+        state: present
+        update_cache: yes
+      become: yes
+
+    - name: Deploy Traefik reverse proxy
+      vars:
+        traefik_acme_email: vrez@wefp.ru
+        traefik_auth_user: admin
+        traefik_auth_password: Tr0-ub4d-or&3-Qwer-ty!@-34
+      include_role:
+        name: traefik
+
+    - name: Deploy Portainer management
+      vars:
+        portainer_auth_user: admin
+        portainer_auth_password: W#x-Yz1-2Ab-C&d-Ef3-Gh!
+        portainer_volume: portainer_data
+      include_role:
+        name: portainer
+
+#    - name: Configure GitLab Runner
+#      include_role:
+#        name: gitlab-runner

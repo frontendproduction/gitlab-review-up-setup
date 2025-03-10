@@ -1,0 +1,29 @@
+---
+- name: Setup prod mysql
+  hosts: apps_vm
+  vars:
+    mysql_volume: mysql_data
+
+  tasks:
+    - name: Create Mysql volume
+      community.docker.docker_volume:
+        name: "{{ mysql_volume }}"
+        state: present
+
+    - name: Deploy Mysql
+      community.docker.docker_container:
+        name: mysql
+        image: mysql:5.7.42
+        state: started
+        restart_policy: unless-stopped
+        volumes:
+          - "{{ mysql_volume }}:/var/lib/mysql"
+        env:
+          MYSQL_ROOT_PASSWORD: awrfpiouhafdsoihgrp0ihgearoihagreihoagfoihasdlkjn
+        networks:
+          - name: "{{ traefik_network }}"
+        ports:
+          - "3306:3306"
+
+
+

@@ -1,0 +1,6 @@
+all:
+  hosts:
+    apps_vm:
+      ansible_host: 51.250.33.16
+      ansible_user: laland
+      traefik_network: traefik
